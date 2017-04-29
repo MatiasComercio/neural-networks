@@ -1,6 +1,21 @@
 # Neural Networks
 TP2 for Artificial Intelligence Systems course from I.T.B.A.
 
+## Pre-requisites
+Execute the following line before executing Matlab/Octave
+    export NEURAL_NETWORK_ROOT=`pwd`
+
+## Execute
+You can configure the desired activation function and simple perceptron
+ example to be run at the `main.m` file.
+Once you have finished, run that file to get the weights output of what
+you have configured.
+
+### Example
+Executing the `main.m` file as it is will find the correspnding weights
+ for both an `or` and an `and` simple perceptrons using a `unit step`
+ activation function.
+
 ## Authors
 This project is written and maintained by
 
