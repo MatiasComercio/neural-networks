@@ -1,4 +1,4 @@
 % Activation function
-function ret = g (h)
+function ret = step_g (h)
   ret = sign(h);
 end
