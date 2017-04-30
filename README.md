@@ -2,7 +2,8 @@
 TP2 for Artificial Intelligence Systems course from I.T.B.A.
 
 ## Pre-requisites
-Execute the following line before executing Matlab/Octave
+Execute the following line from the root's project folder (default name: `neural-networks`) before executing Matlab/Octave
+    
     export NEURAL_NETWORK_ROOT=`pwd`
 
 ## Execute
