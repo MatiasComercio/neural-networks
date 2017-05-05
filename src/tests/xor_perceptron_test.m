@@ -11,14 +11,12 @@ eta = 0.5;
 unit_function = 'non_linear_tanh';
 g = str2func(strcat(unit_function, '_g'));
 g_derivative = str2func(strcat(unit_function, '_g_derivative'));
-are_close_enough = str2func(strcat(unit_function, '_are_close_enough'));
+are_close_enough = str2func(strcat(unit_function, '_are_close_enough')); % TODO: migrate this outside the activation_functions folder
 cost_function = @mean_square_error;
-unit_functions.g = g;
-unit_functions.g_derivative = g_derivative;
-unit_functions.are_close_enough = are_close_enough;
-unit_functions.cost_function = cost_function;
 
-net = neural_network([rows(pattern), 2, rows(expected_output)], unit_functions);
+layers = create_all_non_linear_layers...
+    ([rows(pattern), 2, rows(expected_output)]);
+net = neural_network(layers, are_close_enough, cost_function);
 net.layers(1).weights = [-.35, .15, .20; -.35, .25, .30];
 net.layers(2).weights = [-.60, .40, .45];
 
@@ -27,7 +25,7 @@ net.layers(2).weights = [-.60, .40, .45];
 
 % Fix weights for the current pattern
 [layers, fix_memory] = net.fix(net.layers, expected_output, output, ...
-  net.unit_functions.g_derivative, solve_memory, eta);
+  solve_memory, eta);
 
 w_1_new = [-0.2751, 0.0751, 0.1251; -0.2854, 0.1854, 0.2354];
 w_2_new = [-0.3050, 0.2217, 0.2387];
