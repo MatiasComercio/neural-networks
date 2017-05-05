@@ -52,10 +52,10 @@ expected_outputs = [
 
 % Define which unit functions are going to be used
 unit_function = 'non_linear';
-g = strcat(unit_function, '_g');
-delta = strcat(unit_function, '_delta');
-are_close_enough = strcat(unit_function, '_are_close_enough');
-cost_function = strcat(unit_function, '_cost_function');
+g = str2func(strcat(unit_function, '_g'));
+delta = str2func(strcat(unit_function, '_delta'));
+are_close_enough = str2func(strcat(unit_function, '_are_close_enough'));
+cost_function = str2func(strcat(unit_function, '_cost_function'));
 
 % Train the network
 [weights, global_errors] = train(patterns, expected_outputs, g, delta, ...

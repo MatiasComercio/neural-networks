@@ -33,7 +33,7 @@ function [weights, global_errors] = train(patterns, expected_outputs, ...
     [neural_outputs, weights] = ...
         era(weights, extended_patterns, expected_outputs, eta, g, delta);
     global_errors = [global_errors; ...
-        feval(cost_function, expected_outputs, neural_outputs)];
+        cost_function(expected_outputs, neural_outputs)];
     % Print current results
     print_var('neural_outputs', neural_outputs);
     print_var('weights', weights);
@@ -60,9 +60,9 @@ function [neural_outputs, weights] = ...
     print_var('** New Training Pattern **', pattern);
     print_var('weights', weights);
     % Get the current pattern's output with the current weights
-    neural_outputs(i) = feval(g, weights * pattern);
+    neural_outputs(i) = g(weights * pattern);
     % Fix weights for the current pattern
-    weights_fixes = eta * feval(delta, expected_outputs(i), ...
+    weights_fixes = eta * delta(expected_outputs(i), ...
         neural_outputs(i)) .* pattern.';
     weights = weights + weights_fixes;
     % Print neural output and weights fixes
@@ -74,7 +74,6 @@ end
 function ret = initialize_weights(length)
   ret = random_row_in_range(-0.5, 0.5, length);
 end
-
 
 function ret = random_row_in_range(min, max, length)
   % min: inclusive
@@ -88,7 +87,7 @@ function is_expected = do_outputs_match(expected_outputs, ...
   is_expected = true;
   for i = 1:length(expected_outputs)
     is_expected = is_expected && ...
-        feval(are_close_enough, expected_outputs(i), neural_outputs(i));
+        are_close_enough(expected_outputs(i), neural_outputs(i));
     if ~ is_expected
       return;
     end
