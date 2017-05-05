@@ -30,10 +30,8 @@ function layers = create_layers(neurons_per_layer)
 
   % n_layers = M neural network
   n_layers = length(neurons_per_layer) - 1;
-  % Create layers struct
-  layers = struct;
   % Preallocate space for all layers
-  layers(n_layers).weighs = zeros(1,1);
+  layers(n_layers).weights = 0;
   % Start from the first layer that will have weights, i.e., associations
   %   between two of the given layers. That is, layers are constructed
   %   using two sets of neurons (the current and the next) and its
