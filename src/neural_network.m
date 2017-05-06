@@ -1,8 +1,30 @@
+% Conventions:
+% - weights: row vector
+% - pattern: column vector
+% - patterns: matrix with each column being a pattern
+% - extended_patterns: patterns with the first row being -1 (constant bias factor)
+% - eta: learning rate
+% - expected_outputs: row vector containing the expected output of patterns(i) at 
+%     position i.
+% - neural_output: row vector containint the resulting output of patterns(i) at
+%     position i, that was obtained using the current `g` function and the current
+%     weigths vector 
+%
+% Notes
+% - Structures cannot be modified inside functions. That's why we need to
+%   reassign them.
+
 function net = neural_network(neurons_per_layer, unit_functions)
 % neurons_per_layer: array that, for each position indicating a layer, 
 %   have how many neurons should that layer have. The input and 
 %   output layers must be included too (so, if you want to create a 
-%   neural network of M layers, neurons_per_layer should have length M+1
+%   neural network of M layers, neurons_per_layer should have length M+1)
+%   For example:
+%   	[ 2, 1 ] represents a single layer perceptron with 
+%       2 neurons on the input layer and one output neuron
+%     [ 4, 2, 3 ] represents a multilayer perceptron with 2 neurons on the
+%       input layer, one hidden layer with 2 neurons 
+%       and 3 neurons on the output layer
 % unit_functions: structure with the following definition
 %   unit_functions.g: activation function
 %   unit_functions.g_derivative: g derivative function
@@ -68,7 +90,6 @@ function [net, train_memory] = train(net, patterns, expected_outputs, eta)
     % Determine whether the outputs match
     finished = have_to_finish(expected_outputs, neural_outputs, ...
         unit_functions);
-    % TODO: Calculate global error
     % Save current epoch parameters
     train_memory(epoch_i).layers = layers;
     train_memory(epoch_i).neural_outputs = neural_outputs;
@@ -138,14 +159,6 @@ function weights = create_weights_matrix(n_neurons, input_length)
 %   i.e.: all columns of a row represent all weights for a neuron
 % See files at `docs` folder for more details
   weights = create_rand_matrix(-0.5, 0.5, n_neurons, input_length); % TODO: weights range limits as input parameters
-end
-
-function matrix = create_rand_matrix(min, max, rows, cols)
-% min: inclusive
-% max: inclusive
-% rows: matrix's number of rows
-% cols: matrix's number of columns
-  matrix = (max-min).*rand(rows, cols) + min;
 end
 
 function [layers, neural_outputs, memory] = epoch(layers, patterns, ...
