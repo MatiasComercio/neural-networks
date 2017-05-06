@@ -36,6 +36,7 @@ function net = neural_network(neurons_per_layer, are_close_enough, ...
 % cost_function: used to calculate the error. Example: @mean_square_error
 
   net = struct;
+  net.neurons_per_layer = neurons_per_layer;
   net.layers = create_layers(neurons_per_layer);
   net.cost_function = cost_function;
   net.are_close_enough = are_close_enough;
@@ -82,29 +83,73 @@ function layers = create_layers(neurons_per_layer)
   end
 end
 
-function [net, train_memory] = train(net, patterns, expected_outputs, eta)
-  layers = net.layers;
+function [net, train_memory] = train(net, patterns, expected_outputs, ...
+    eta, original_alpha, global_error_evaluation_gap)
+  prev_layers = net.layers;
+  gap = global_error_evaluation_gap;
+  rows_output = rows(expected_outputs);
+
+  % Create alpha variable
+  alpha = original_alpha;
+
+  % Create a non-value previous epoch memory
+  prev_epoch_memory = nan;
+
+  % Evaluate network as it is
+  [neural_outputs] = solve_all(prev_layers, patterns, rows_output);
+  prev_global_error_evaluation = ...
+      net.cost_function(expected_outputs, neural_outputs);
 
   % Train until expected outputs match the neural outputs
   finished = false;
   epoch_i = 1;
   while ~finished
     % Train one complete epoch
-    [layers, neural_outputs, epoch_memory] = ...
-        epoch(layers, patterns, expected_outputs, eta);
+    [curr_layers, epoch_memory] = ...
+        epoch(prev_layers, patterns, expected_outputs, ...
+        prev_epoch_memory, eta, alpha);
+    % Calculate neural output with stable (non-learning) layers
+    neural_outputs = solve_all(curr_layers, patterns, rows_output);
     % Calculate global error
     global_error = net.cost_function(expected_outputs, neural_outputs);
+    % Save current eta before updating it
+    train_memory(epoch_i).eta = eta;
+    % Adapt eta and alpha according to global error change through this
+    % iteration
+    [eta, alpha, curr_global_error_evaluation, good_epoch] = ...
+        evaluate_gap(gap, epoch_i, global_error, ...
+        prev_global_error_evaluation, eta, alpha, original_alpha);
+    % Restart epoch to last valid epoch if this training gap
+    % was not successful
+    if ~ good_epoch
+      % Epoch will be **the next one** since the last real evaluation
+      epoch_i = epoch_i - gap;
+      if epoch_i == 0
+        prev_layers = net.layers;
+        prev_epoch_memory = nan;
+      else
+        prev_layers = train_memory(epoch_i).layers;
+        prev_epoch_memory = train_memory(epoch_i).epoch_memory;
+      end
+      epoch_i = epoch_i + 1;
+      continue;
+    end
     % Determine whether the outputs match
     finished = have_to_finish(expected_outputs, neural_outputs, ...
         net.are_close_enough);
     % Save current epoch parameters
-    train_memory(epoch_i).layers = layers;
+    train_memory(epoch_i).layers = curr_layers;
     train_memory(epoch_i).neural_outputs = neural_outputs;
     train_memory(epoch_i).epoch_memory = epoch_memory;
     train_memory(epoch_i).global_error = global_error;
+    % Update parameters to go to the next epoch
+    prev_layers = curr_layers;
+    prev_global_error_evaluation = curr_global_error_evaluation;
+    prev_epoch_memory = epoch_memory;
+    alpha = original_alpha;
     epoch_i = epoch_i + 1;
   end
-  net.layers = layers;
+  net.layers = curr_layers;
 end
 
 function [output, memory] = solve(layers, pattern)
@@ -135,11 +180,11 @@ end
 %% Below functions should act as `private` ones
 
 function [layers, memory] = fix(layers, expected_output, ...
-    output, solve_memory, eta)
+    output, solve_memory, prev_fix_memory, eta, alpha)
   M = length(layers);
   g_output = output;
   % Calculate the delta for the last layer as a different case
-  memory(M).deltas = layers(M).g_derivative(g_output) .* ...
+  memory(M).deltas = (layers(M).g_derivative(g_output)  + .1) .* ...
       (expected_output - output);
   % Calculate deltas for all previous layers
   for m = M-1:-1:1
@@ -157,7 +202,12 @@ function [layers, memory] = fix(layers, expected_output, ...
     deltas = memory(m).deltas;
     % Recall to add the current bias factor as input too
     input = [ -1 ; solve_memory(m).V ];
-    layers(m).weights = weights + eta .* deltas * input.';
+    % Get the current deltas for all weights and save them to memory
+    curr_deltas_weights = eta .* deltas * input.';
+    memory(m).deltas_weights = curr_deltas_weights;
+    % Calculate the new weights
+    layers(m).weights = weights + curr_deltas_weights + ...
+        prev_deltas_weights_percentage(prev_fix_memory, m, alpha);
   end
 end
 
@@ -168,8 +218,8 @@ function weights = create_weights_matrix(n_neurons, input_length)
   weights = create_rand_matrix(-0.5, 0.5, n_neurons, input_length); % TODO: weights range limits as input parameters
 end
 
-function [layers, neural_outputs, memory] = epoch(layers, patterns, ...
-    expected_outputs, eta)
+function [layers, memory] = epoch(layers, patterns, ...
+    expected_outputs, prev_epoch_memory, eta, alpha)
   patterns_amount = columns(patterns);
   % Create a permutation to get a different sample patterns
   % Recall each pattern is a column vector, so, the number of columns of
@@ -178,6 +228,8 @@ function [layers, neural_outputs, memory] = epoch(layers, patterns, ...
   % Initialize the memory row vector
   memory(1).neural_output = 0;
   memory = save_to_epoch_memory(memory, patterns_amount, 0, 0, 0);
+  % Initialize the prev_fix_memory
+  prev_fix_memory = get_prev_fix_memory(prev_epoch_memory);
   % Train with each pattern in the specified random order
   for i = sample_patterns_indexes
     % Get the current sample pattern and its expected output
@@ -187,12 +239,13 @@ function [layers, neural_outputs, memory] = epoch(layers, patterns, ...
     [output, solve_memory] = solve(layers, pattern);
     % Fix weights for the current pattern
     [layers, fix_memory] = fix(layers, expected_output, output, ...
-      solve_memory, eta);
+      solve_memory, prev_fix_memory, eta, alpha);
     % Save current pattern training results
     memory = save_to_epoch_memory(memory, i, output, solve_memory, ...
         fix_memory);
+    % Update the given prev_fix_memory
+    prev_fix_memory = fix_memory;
   end
-  neural_outputs = [memory(:).neural_output];
 end
 
 function mem = save_to_epoch_memory(mem, i, output, solve_mem, fix_mem)
@@ -213,3 +266,56 @@ function outputs_match = have_to_finish(expected_outputs, ...
   end
 end
 
+function prev_fix_memory = get_prev_fix_memory(prev_epoch_memory)
+  prev_fix_memory = nan;
+  if isstruct(prev_epoch_memory)
+    prev_fix_memory = prev_epoch_memory.fix_memory;
+  end
+end
+
+function ret = prev_deltas_weights_percentage(prev_fix_memory, ...
+    layer_index, alpha)
+  ret = 0;
+  if isstruct(prev_fix_memory)
+    ret = alpha .* prev_fix_memory(layer_index).deltas_weights;
+  end
+end
+
+function neural_outputs = solve_all(layers, patterns, rows_output)
+  patterns_amount = columns(patterns);
+  neural_outputs = zeros(rows_output, patterns_amount);
+  for i = 1:patterns_amount
+    neural_outputs(:,i) = solve(layers, patterns(:, i));
+  end
+end
+
+function [eta, alpha, global_error, good_gap] = ...
+        evaluate_gap(gap, epoch_i, curr_global_error, ...
+        prev_global_error, eta, alpha, original_alpha)
+  % Constant definitions
+  a = 0.001;
+  b = 0.1;
+
+  % Variables assignment
+  global_error = prev_global_error;
+  good_gap = true;
+  % It's still no time to make the evaluation
+  if mod(epoch_i, gap) ~= 0
+      return;
+  end
+  % Time to make the evaluation
+  global_error = curr_global_error;
+  % The following threshold is because of the problem of number
+  % representation on computers
+  if curr_global_error < prev_global_error
+    % Improvement was reach during this gap => restore alpha and let eta be
+    % more flexible
+    eta = eta + a;
+    alpha = original_alpha;
+    return;
+  end
+  % Error has been degraded, so, it hadn't been a good gap
+  good_gap = false;
+  eta = eta - b * eta;
+  alpha = 0;
+end
