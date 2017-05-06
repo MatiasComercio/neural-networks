@@ -62,6 +62,7 @@ unit_functions.g = g;
 unit_functions.g_derivative = g_derivative;
 unit_functions.are_close_enough = are_close_enough;
 unit_functions.cost_function = cost_function;
+unit_functions.epsilon = .1;
 
 net = neural_network([rows(patterns), rows(expected_outputs)], unit_functions);
 

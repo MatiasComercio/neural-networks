@@ -1,13 +1,4 @@
-% Read input patterns
-patterns = [
-  1, 1,-1,-1;
-  1,-1, 1,-1;
-];
-
-% Read expected outputs
-expected_outputs = [
-  -1, 1, 1, -1;
-];
+function [net, train_memory] = train_network(patterns, expected_outputs, epsilon)
 
 eta = 0.05;
 
@@ -21,9 +12,12 @@ unit_functions.g = g;
 unit_functions.g_derivative = g_derivative;
 unit_functions.are_close_enough = are_close_enough;
 unit_functions.cost_function = cost_function;
-unit_functions.epsilon = .1;
+unit_functions.epsilon = epsilon;
 
-net = neural_network([rows(patterns), 2, rows(expected_outputs)], unit_functions);
+net = neural_network([rows(patterns), 7, rows(expected_outputs)], unit_functions);
 
 % Train the network
 [net, train_memory] = net.train(net, patterns, expected_outputs, eta);
+
+end
+
