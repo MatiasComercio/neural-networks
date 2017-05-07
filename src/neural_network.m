@@ -197,10 +197,11 @@ end
 function outputs_match = have_to_finish(expected_outputs, ...
     neural_outputs, unit_functions)
   are_close_enough = unit_functions.are_close_enough;
+  epsilon = unit_functions.epsilon;
   outputs_match = true;
   for i = 1:columns(expected_outputs)
     outputs_match = outputs_match && ...
-        are_close_enough(expected_outputs(i), neural_outputs(i));
+        are_close_enough(expected_outputs(i), neural_outputs(i), epsilon);
     if ~ outputs_match
       return;
     end
