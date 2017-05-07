@@ -32,7 +32,7 @@ while ~finished
 end
 
 % TODO: Test only. Plots the error progress along the whole network training
-train_memory_total_length = sum(arrayfun(@(memory_struct) numel(memory_struct.train_memory), global_memory));
-scatter(1:train_memory_total_length, [global_memory(1:end).train_memory(1:end).global_error])
+%train_memory_total_length = sum(arrayfun(@(memory_struct) numel(memory_struct.train_memory), global_memory));
+%scatter(1:train_memory_total_length, [global_memory(1:end).train_memory(1:end).global_error])
 
 
