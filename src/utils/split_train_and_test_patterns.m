@@ -18,14 +18,14 @@ function [train_patterns, train_expected_outputs, test_patterns, test_expected_o
     for i = 1:train_patterns_amount
         index = patterns_indexes(i);
         train_patterns(:,i) = patterns(:,index);
-        train_expected_outputs(:,i) = expected_outputs(:, index);
+        train_expected_outputs(:,i) = expected_outputs(:,index);
     end
 
     % Select the patterns that will be used for testing the trained net
     for i = 1:test_patterns_amount
         test_pattern_i_offset = train_patterns_amount + i;
         pattern_index = patterns_indexes(test_pattern_i_offset);
-        test_patterns(:,i) = patterns(:, pattern_index);
+        test_patterns(:,i) = patterns(:,pattern_index);
         test_expected_outputs(:,i) = expected_outputs(:,pattern_index);
     end
 

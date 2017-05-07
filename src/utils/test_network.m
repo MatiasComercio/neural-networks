@@ -9,14 +9,14 @@ function [finished, test_memory] = test_network(net, patterns, expected_outputs,
   
    % Use the network to solve each test pattern
    for i = 1:patterns_amount
-       [output, memory] = net.solve(net, patterns(:, i));
+       [output, memory] = net.solve(net, patterns(:,i));
        outputs(i) = output;
-       test_memory(i).memory = memory;
+       test_memory.solve_memories(i).memory = memory;
    end
    
    % Find the error for the previously calculated patterns
    error = mean_square_error(expected_outputs, outputs);
+   test_memory.error = error;
    finished = error < max_error;
-   
 end
 
