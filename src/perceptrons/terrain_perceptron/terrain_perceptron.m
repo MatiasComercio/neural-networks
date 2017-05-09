@@ -1,3 +1,5 @@
+filename = 'terrain_perceptron_net.mat';
+
 % Include patterns && expected_outputs
 terrain_data;
 
@@ -30,6 +32,7 @@ net = neural_network(layers, with_epsilon_are_close_enough, cost_function);
 % approximations is negligible
 count = 1;
 finished = false;
+tic;
 while ~finished
     % Train and test the network
     [net, train_memory] = net.train(net, train_patterns, ...
@@ -45,6 +48,10 @@ while ~finished
         (are_close_enough(expected_output, neural_output, epsilon));
     count = count + 1;
 end
+toc;
+
+save(filename, 'net', 'train_patterns', 'train_expected_outputs', ...
+    'test_patterns', 'test_expected_outputs');
 
 % TODO: Test only. Plots the error progress along
 %   the whole network training
