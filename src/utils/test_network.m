@@ -4,19 +4,9 @@ function [finished, test_memory] = test_network(net, patterns, expected_outputs,
    % If the mean square of all aproximated oputputs is lesser than max_error,
    % then the network training is considered finished
   
-   patterns_amount = columns(patterns);
-   outputs = zeros(rows(expected_outputs), patterns_amount);
-  
-   % Use the network to solve each test pattern
-   for i = 1:patterns_amount
-       [output, memory] = net.solve(net, patterns(:,i));
-       outputs(i) = output;
-       test_memory.solve_memories(i).memory = memory;
-   end
+   [outputs, test_memory.solve_memories] = solve_patterns(net, patterns);
    
    % Find the error for the previously calculated patterns
-   error = mean_square_error(expected_outputs, outputs);
-   test_memory.error = error;
-   finished = error < max_error;
+   test_memory.error = mean_square_error(expected_outputs, outputs);
+   finished = test_memory.error < max_error;
 end
-
