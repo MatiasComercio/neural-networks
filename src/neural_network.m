@@ -77,14 +77,16 @@ function layers = create_layers(neurons_per_layer)
     %   that the user specified for the next layer, as we noted before
     user_layer = neurons_per_layer(m+1);
     n_neurons = user_layer.neurons;
-    layers(m).weights = create_weights_matrix(n_neurons, input_length);
+    sigma_m = sqrt(input_length) ^ -1;
+    layers(m).weights = create_weights_matrix(n_neurons, input_length, ...
+        sigma_m);
     layers(m).g = user_layer.g;
     layers(m).g_derivative = user_layer.g_derivative;
   end
 end
 
 function [net, train_memory] = train(net, patterns, expected_outputs, ...
-    eta, original_alpha, global_error_evaluation_gap)
+    eta, original_alpha, global_error_evaluation_gap, evaluate_gap)
   prev_layers = net.layers;
   gap = global_error_evaluation_gap;
   rows_output = rows(expected_outputs);
@@ -184,7 +186,7 @@ function [layers, memory] = fix(layers, expected_output, ...
   M = length(layers);
   g_output = output;
   % Calculate the delta for the last layer as a different case
-  memory(M).deltas = (layers(M).g_derivative(g_output)  + .1) .* ...
+  memory(M).deltas = layers(M).g_derivative(g_output) .* ...
       (expected_output - output);
   % Calculate deltas for all previous layers
   for m = M-1:-1:1
@@ -211,11 +213,11 @@ function [layers, memory] = fix(layers, expected_output, ...
   end
 end
 
-function weights = create_weights_matrix(n_neurons, input_length)
+function weights = create_weights_matrix(n_neurons, input_length, sigma_m)
 % Weights matrix will have `n_neurons` rows and `input_length` columns
 %   i.e.: all columns of a row represent all weights for a neuron
 % See files at `docs` folder for more details
-  weights = create_rand_matrix(-0.5, 0.5, n_neurons, input_length); % TODO: weights range limits as input parameters
+  weights = create_rand_matrix(-sigma_m, sigma_m, n_neurons, input_length);
 end
 
 function [layers, memory] = epoch(layers, patterns, ...
@@ -287,35 +289,4 @@ function neural_outputs = solve_all(layers, patterns, rows_output)
   for i = 1:patterns_amount
     neural_outputs(:,i) = solve(layers, patterns(:, i));
   end
-end
-
-function [eta, alpha, global_error, good_gap] = ...
-        evaluate_gap(gap, epoch_i, curr_global_error, ...
-        prev_global_error, eta, alpha, original_alpha)
-  % Constant definitions
-  a = 0.001;
-  b = 0.1;
-
-  % Variables assignment
-  global_error = prev_global_error;
-  good_gap = true;
-  % It's still no time to make the evaluation
-  if mod(epoch_i, gap) ~= 0
-      return;
-  end
-  % Time to make the evaluation
-  global_error = curr_global_error;
-  % The following threshold is because of the problem of number
-  % representation on computers
-  if curr_global_error < prev_global_error
-    % Improvement was reach during this gap => restore alpha and let eta be
-    % more flexible
-    eta = eta + a;
-    alpha = original_alpha;
-    return;
-  end
-  % Error has been degraded, so, it hadn't been a good gap
-  good_gap = false;
-  eta = eta - b * eta;
-  alpha = 0;
 end

@@ -10,7 +10,7 @@ eta = 0.5;
 alpha = 0.9;
 gap = 1;
 g = @tanh;
-g_derivative = @(g) 1-g.^2; % \beta = 1
+g_derivative = @(g) 1-g.^2 + .1; % \beta = 1
 cost_function = @(a, b) sum(sum((a - b).^2));
 
 % First epoch
@@ -24,7 +24,7 @@ g_2 = g(h_2); V_3 = g_2;
 prev_global_error = cost_function(expected_outputs, V_3);
 
 % Backward
-delta_2 = (g_derivative(g_2) + .1) .* (expected_outputs - V_3);
+delta_2 = g_derivative(g_2) .* (expected_outputs - V_3);
 delta_1 = g_derivative(g_1) .* (W_2(:, 2:end).' * delta_2);
 
 delta_weights_1_1 = eta .* (delta_1 * [ -1 ; V_1 ].');
@@ -62,7 +62,7 @@ g_2 = g(h_2); V_3 = g_2;
 prev_global_error = cost_function(expected_outputs, V_3);
 
 % Backward
-delta_2 = (g_derivative(g_2) + .1) .* (expected_outputs - V_3);
+delta_2 = g_derivative(g_2) .* (expected_outputs - V_3);
 delta_1 = g_derivative(g_1) .* (W_2(:, 2:end).' * delta_2);
 
 W_1_new = W_1 + eta .* (delta_1 * [ -1 ; V_1 ].') + ...

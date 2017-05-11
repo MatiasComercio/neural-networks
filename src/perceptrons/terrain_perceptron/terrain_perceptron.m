@@ -24,6 +24,7 @@ expected_outputs_sample = expected_outputs(:, patterns_indexes);
 with_epsilon_are_close_enough = @(expected_output, neural_output) ...
     (epsilon_are_close_enough(expected_output, neural_output, epsilon));
 cost_function = @mean_square_error;
+eval_gap = @evaluate_gap;
 layers = create_all_non_linear_layers...
     ([rows(patterns), 10, 10, 5, rows(expected_outputs)]);
 net = neural_network(layers, with_epsilon_are_close_enough, cost_function);
@@ -36,7 +37,7 @@ tic;
 while ~finished
     % Train and test the network
     [net, train_memory] = net.train(net, train_patterns, ...
-        train_expected_outputs, eta, alpha, gap);
+        train_expected_outputs, eta, alpha, gap, eval_gap);
     [finished, test_memory] = test_network(net, test_patterns, ...
         test_expected_outputs, max_error);
     % Save current train and test memory
