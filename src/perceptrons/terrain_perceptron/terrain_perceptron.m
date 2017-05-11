@@ -11,7 +11,7 @@ max_error = 5;
 
 % Choose 10 random samples from the patterns
 [patterns_sample, patterns_indexes] = ...
-    datasample(patterns, 441, rows(patterns), 'Replace', false);
+    datasample(patterns, columns(patterns), rows(patterns), 'Replace', false);
 expected_outputs_sample = expected_outputs(:, patterns_indexes);
 
 % Split patterns in train patterns and test patterns
@@ -59,13 +59,10 @@ save(filename, 'net', 'train_patterns', 'train_expected_outputs', ...
 %   the first `arrayfun` function parameter, that computs the length of
 %   the train_memory element of that specific struct, and then sum the
 %   lengths of all those train_memories
-if(length(train_memory) > 1)
+if (length(train_memory) > 1)
     train_memory_total_length = ...
         sum(arrayfun(@(memory_struct) numel(memory_struct.train_memory), ...
         global_memory));
     scatter(1:train_memory_total_length, ...
     [global_memory(1:end).train_memory(1:end).global_error])
 end
-
-
-
