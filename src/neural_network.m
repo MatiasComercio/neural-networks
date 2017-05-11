@@ -85,73 +85,79 @@ function layers = create_layers(neurons_per_layer)
   end
 end
 
-function [net, train_memory] = train(net, patterns, expected_outputs, ...
-    eta, original_alpha, global_error_evaluation_gap, evaluate_gap)
-  prev_layers = net.layers;
-  gap = global_error_evaluation_gap;
-  rows_output = rows(expected_outputs);
+function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
+    train_expected_outputs, eta, original_alpha, gap, evaluate_gap )
 
-  % Create alpha variable
-  alpha = original_alpha;
-
-  % Create a non-value previous epoch memory
-  prev_epoch_memory = nan;
-
-  % Evaluate network as it is
-  [neural_outputs] = solve_all(prev_layers, patterns, rows_output);
-  prev_global_error_evaluation = ...
-      net.cost_function(expected_outputs, neural_outputs);
-
-  % Train until expected outputs match the neural outputs
-  finished = false;
-  epoch_i = 1;
-  while ~finished
-    % Train one complete epoch
-    [curr_layers, epoch_memory] = ...
-        epoch(prev_layers, patterns, expected_outputs, ...
-        prev_epoch_memory, eta, alpha);
-    % Calculate neural output with stable (non-learning) layers
-    neural_outputs = solve_all(curr_layers, patterns, rows_output);
-    % Calculate global error
-    global_error = net.cost_function(expected_outputs, neural_outputs);
-    % Save current eta before updating it
-    train_memory(epoch_i).eta = eta;
-    % Adapt eta and alpha according to global error change through this
-    % iteration
-    [eta, alpha, curr_global_error_evaluation, good_epoch] = ...
-        evaluate_gap(gap, epoch_i, global_error, ...
-        prev_global_error_evaluation, eta, alpha, original_alpha);
-    % Restart epoch to last valid epoch if this training gap
-    % was not successful
-    if ~ good_epoch
-      % Epoch will be **the next one** since the last real evaluation
-      epoch_i = epoch_i - gap;
-      if epoch_i == 0
-        prev_layers = net.layers;
-        prev_epoch_memory = nan;
-      else
-        prev_layers = train_memory(epoch_i).layers;
-        prev_epoch_memory = train_memory(epoch_i).epoch_memory;
-      end
-      epoch_i = epoch_i + 1;
-      continue;
-    end
-    % Determine whether the outputs match
-    finished = have_to_finish(expected_outputs, neural_outputs, ...
-        net.are_close_enough);
-    % Save current epoch parameters
-    train_memory(epoch_i).layers = curr_layers;
-    train_memory(epoch_i).neural_outputs = neural_outputs;
-    train_memory(epoch_i).epoch_memory = epoch_memory;
-    train_memory(epoch_i).global_error = global_error;
-    % Update parameters to go to the next epoch
-    prev_layers = curr_layers;
-    prev_global_error_evaluation = curr_global_error_evaluation;
-    prev_epoch_memory = epoch_memory;
+    train_outputs_size = rows(train_expected_outputs);
+    
     alpha = original_alpha;
-    epoch_i = epoch_i + 1;
-  end
-  net.layers = curr_layers;
+
+    % Initial epoch values
+    original_epoch.i = 0;
+    original_epoch.layers = net.layers;
+    original_epoch.memory = nan;
+  
+    % Train initial epoch
+    train_outputs = solve_all(original_epoch.layers, train_patterns, ...
+        train_outputs_size);
+    original_epoch.train_global_error = net.cost_function(train_expected_outputs, ...
+        train_outputs);
+    
+    % Plot initial epoch errors
+    plot_train_test_error(original_epoch.i, original_epoch.train_global_error);
+    
+    % Set last good train & test epochs to original epoch
+    train_epoch = original_epoch;
+    
+    % Next epoch
+    prev_epoch = original_epoch;
+    curr_epoch.i = prev_epoch.i + 1;
+    
+    % Train until expected outputs match the training outputs
+	finished = false;
+    while ~finished
+        % Train one complete epoch
+        [curr_epoch.layers, curr_epoch.memory] = epoch(prev_epoch.layers, ...
+            train_patterns, train_expected_outputs, prev_epoch.memory, eta, alpha);
+    
+        % Train epoch
+        train_outputs = solve_all(curr_epoch.layers, train_patterns, ...
+            train_outputs_size);
+        curr_epoch.train_global_error = net.cost_function(train_expected_outputs, ...
+            train_outputs);
+        
+        gap_passed = (mod(curr_epoch.i, gap) == 0);
+        if (gap_passed)
+            % Adapt eta and alpha according to global error change through this gap
+            [eta, alpha, good_epoch] = evaluate_gap(train_epoch.train_global_error, ...
+                curr_epoch.train_global_error, eta, alpha, original_alpha);
+            
+            % If this is not a good gap epoch go back to the last one
+            if (~good_epoch)
+                prev_epoch = train_epoch;
+                curr_epoch.i = prev_epoch.i + 1;
+                continue;
+            end
+            
+            % Set train_epoch as this is the last good gap epoch
+            train_epoch = curr_epoch;
+        end
+        
+        % Plot current epoch errors
+        plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error);
+        
+        % Next epoch
+        prev_epoch = curr_epoch;
+        curr_epoch.i = prev_epoch.i + 1;
+        
+        plot_error_bars(train_expected_outputs, train_outputs);
+        % Determine whether the outputs match
+        finished = have_to_finish(train_expected_outputs, train_outputs, ...
+            net.are_close_enough);
+    end
+    
+    % Update net layers
+    net.layers = curr_epoch.layers;
 end
 
 function [output, memory] = solve(layers, pattern)

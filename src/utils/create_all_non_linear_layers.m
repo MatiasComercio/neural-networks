@@ -6,4 +6,3 @@ function layers = create_all_non_linear_layers(neurons_per_layer)
     layers(i).neurons = neurons_per_layer(i);
   end
 end
-
