@@ -1,3 +1,5 @@
+filename = 'terrain_perceptron_net.mat';
+
 % Include patterns && expected_outputs
 terrain_data;
 
@@ -9,7 +11,7 @@ max_error = 5;
 
 % Choose 10 random samples from the patterns
 [patterns_sample, patterns_indexes] = ...
-    datasample(patterns, 10, rows(patterns), 'Replace', false);
+    datasample(patterns, columns(patterns), rows(patterns), 'Replace', false);
 expected_outputs_sample = expected_outputs(:, patterns_indexes);
 
 % Split patterns in train patterns and test patterns
@@ -23,13 +25,14 @@ with_epsilon_are_close_enough = @(expected_output, neural_output) ...
     (epsilon_are_close_enough(expected_output, neural_output, epsilon));
 cost_function = @mean_square_error;
 layers = create_all_non_linear_layers...
-    ([rows(patterns), 7, rows(expected_outputs)]);
+    ([rows(patterns), 10, 10, 5, rows(expected_outputs)]);
 net = neural_network(layers, with_epsilon_are_close_enough, cost_function);
 
 % Keep training the network until the error for the test_patterns
 % approximations is negligible
 count = 1;
 finished = false;
+tic;
 while ~finished
     % Train and test the network
     [net, train_memory] = net.train(net, train_patterns, ...
@@ -45,6 +48,10 @@ while ~finished
         (are_close_enough(expected_output, neural_output, epsilon));
     count = count + 1;
 end
+toc;
+
+save(filename, 'net', 'train_patterns', 'train_expected_outputs', ...
+    'test_patterns', 'test_expected_outputs');
 
 % TODO: Test only. Plots the error progress along
 %   the whole network training
@@ -52,10 +59,10 @@ end
 %   the first `arrayfun` function parameter, that computs the length of
 %   the train_memory element of that specific struct, and then sum the
 %   lengths of all those train_memories
-train_memory_total_length = ...
-    sum(arrayfun(@(memory_struct) numel(memory_struct.train_memory), ...
-    global_memory));
-scatter(1:train_memory_total_length, ...
+if (length(train_memory) > 1)
+    train_memory_total_length = ...
+        sum(arrayfun(@(memory_struct) numel(memory_struct.train_memory), ...
+        global_memory));
+    scatter(1:train_memory_total_length, ...
     [global_memory(1:end).train_memory(1:end).global_error])
-
-
+end
