@@ -14,8 +14,6 @@ function [eta, alpha, global_error, good_gap] = ...
   end
   % Time to make the evaluation
   global_error = curr_global_error;
-  % The following threshold is because of the problem of number
-  % representation on computers
   if curr_global_error < prev_global_error
     % Improvement was reach during this gap => restore alpha and let eta be
     % more flexible
