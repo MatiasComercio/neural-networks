@@ -85,10 +85,14 @@ function layers = create_layers(neurons_per_layer)
   end
 end
 
-function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
-    train_expected_outputs, eta, original_alpha, gap, evaluate_gap )
+function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
+    train_expected_outputs, test_patterns, test_expected_outputs, ...
+    eta, original_alpha, gap, evaluate_gap )
+
+    global figure_error;
 
     train_outputs_size = rows(train_expected_outputs);
+    test_outputs_size = rows(test_expected_outputs);
     
     alpha = original_alpha;
 
@@ -103,11 +107,17 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
     original_epoch.train_global_error = net.cost_function(train_expected_outputs, ...
         train_outputs);
     
+    % Test initial epoch
+    test_outputs = solve_all(original_epoch.layers, test_patterns, test_outputs_size);
+	original_epoch.test_global_error = net.cost_function(test_expected_outputs, test_outputs);
+    
     % Plot initial epoch errors
-    plot_train_test_error(original_epoch.i, original_epoch.train_global_error);
+    plot_train_test_error(original_epoch.i, original_epoch.train_global_error, ...
+        original_epoch.test_global_error);    
     
     % Set last good train & test epochs to original epoch
     train_epoch = original_epoch;
+    test_epoch = original_epoch;
     
     [prev_epoch, curr_epoch] = next_epoch(original_epoch);
     % Train until expected outputs match the training outputs
@@ -122,6 +132,12 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
             train_outputs_size);
         curr_epoch.train_global_error = net.cost_function(train_expected_outputs, ...
             train_outputs);
+        
+        % Test epoch
+        test_outputs = solve_all(curr_epoch.layers, test_patterns, ...
+            test_outputs_size);
+        curr_epoch.test_global_error = net.cost_function(test_expected_outputs, ...
+            test_outputs);
         
         gap_passed = (mod(curr_epoch.i, gap) == 0);
         if (gap_passed)
@@ -140,9 +156,24 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
         end
         
         % Plot current epoch errors
-        plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error);
+        plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error, curr_epoch.test_global_error);
         plot_error_bars(train_expected_outputs, train_outputs);
-
+        
+        % Save epoch if test error intersects train error
+        if (sign(prev_epoch.train_global_error - prev_epoch.test_global_error) ~= ...
+                sign(curr_epoch.train_global_error - curr_epoch.test_global_error) ...
+                    || curr_epoch.train_global_error == curr_epoch.test_global_error) 
+            test_epoch = curr_epoch;
+            
+            print(figure_error, 'terrain_perceptron_net_test', '-dpng')
+            % Save test net
+            aux_layers = net.layers;
+            net.layers = test_epoch.layers;
+            save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
+                'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
+            net.layers = aux_layers;        
+        end
+        
         alpha = original_alpha;
         
         % Determine whether the outputs match
