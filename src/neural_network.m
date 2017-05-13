@@ -111,7 +111,7 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     test_outputs = solve_all(original_epoch.layers, test_patterns, test_outputs_size);
 	original_epoch.test_global_error = net.cost_function(test_expected_outputs, test_outputs);
     
-    %
+    % Normalize Global Errors
     original_normalized_train_error = original_epoch.train_global_error/columns(train_patterns);
     original_normalized_test_error = original_epoch.test_global_error/columns(test_patterns);   
     
@@ -159,7 +159,7 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
             train_epoch = curr_epoch;
         end
         
-        % Normilize Global Errors
+        % Normalize Global Errors
         prev_normalized_train_error = prev_epoch.train_global_error/columns(train_patterns);
         prev_normalized_test_error = prev_epoch.test_global_error/columns(test_patterns);
         curr_normalized_train_error = curr_epoch.train_global_error/columns(train_patterns);
@@ -175,8 +175,10 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
                     || curr_normalized_train_error == curr_normalized_test_error ) 
             test_epoch = curr_epoch;
             
+            % Save current figure in file
             print(figure_error, 'terrain_perceptron_net_test', '-dpng')
-            % Save test net
+            
+            % Save current net in file
             aux_layers = net.layers;
             net.layers = test_epoch.layers;
             save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
