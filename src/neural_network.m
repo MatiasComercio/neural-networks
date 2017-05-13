@@ -116,7 +116,7 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
         % Train one complete epoch
         [curr_epoch.layers, curr_epoch.memory] = epoch(prev_epoch.layers, ...
             train_patterns, train_expected_outputs, prev_epoch.memory, eta, alpha);
-    
+
         % Analyze epoch's training results
         train_outputs = solve_all(curr_epoch.layers, train_patterns, ...
             train_outputs_size);
@@ -137,12 +137,12 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
             
             % Set train_epoch as this is the last good gap epoch
             train_epoch = curr_epoch;
-            
-            % Plot current epoch errors
-            plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error);
-            plot_error_bars(train_expected_outputs, train_outputs);
         end
         
+        % Plot current epoch errors
+        plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error);
+        plot_error_bars(train_expected_outputs, train_outputs);
+
         alpha = original_alpha;
         
         % Determine whether the outputs match
