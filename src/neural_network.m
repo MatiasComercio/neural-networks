@@ -111,9 +111,13 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     test_outputs = solve_all(original_epoch.layers, test_patterns, test_outputs_size);
 	original_epoch.test_global_error = net.cost_function(test_expected_outputs, test_outputs);
     
+    %
+    original_normalized_train_error = original_epoch.train_global_error/columns(train_patterns);
+    original_normalized_test_error = original_epoch.test_global_error/columns(test_patterns);   
+    
     % Plot initial epoch errors
-    plot_train_test_error(original_epoch.i, original_epoch.train_global_error, ...
-        original_epoch.test_global_error);    
+    plot_train_test_error(original_epoch.i, original_normalized_train_error, ...
+        original_normalized_test_error);    
     
     % Set last good train & test epochs to original epoch
     train_epoch = original_epoch;
@@ -155,14 +159,20 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
             train_epoch = curr_epoch;
         end
         
+        % Normilize Global Errors
+        prev_normalized_train_error = prev_epoch.train_global_error/columns(train_patterns);
+        prev_normalized_test_error = prev_epoch.test_global_error/columns(test_patterns);
+        curr_normalized_train_error = curr_epoch.train_global_error/columns(train_patterns);
+        curr_normalized_test_error = curr_epoch.test_global_error/columns(test_patterns);
+        
         % Plot current epoch errors
-        plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error, curr_epoch.test_global_error);
+        plot_train_test_error(curr_epoch.i, curr_normalized_train_error, curr_normalized_test_error);
         plot_error_bars(train_expected_outputs, train_outputs);
         
         % Save epoch if test error intersects train error
-        if (sign(prev_epoch.train_global_error - prev_epoch.test_global_error) ~= ...
-                sign(curr_epoch.train_global_error - curr_epoch.test_global_error) ...
-                    || curr_epoch.train_global_error == curr_epoch.test_global_error) 
+        if (sign(prev_normalized_train_error  - prev_normalized_test_error) ~= ...
+                sign(curr_normalized_train_error - curr_normalized_test_error ) ...
+                    || curr_normalized_train_error == curr_normalized_test_error ) 
             test_epoch = curr_epoch;
             
             print(figure_error, 'terrain_perceptron_net_test', '-dpng')

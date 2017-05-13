@@ -12,7 +12,7 @@ function out = get_config( input_string )
         case 'terrain_perceptron'
             out.filename = 'terrain_perceptron_net.mat';
             [out.patterns, out.expected_outputs] = terrain_data();
-            out.dataSize = columns(out.patterns);
+            out.data_size = columns(out.patterns);
             out.epsilon = 0.1;
             out.gap.size = 1;
             out.gap.eval = @evaluate_gap;

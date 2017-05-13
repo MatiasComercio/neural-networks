@@ -9,7 +9,7 @@ filename = config.filename;
 
 patterns = config.patterns;
 expected_outputs = config.expected_outputs;
-dataSize = config.dataSize;
+data_size = config.data_size;
 epsilon = config.epsilon;
 gap_size = config.gap.size;
 gap_eval = config.gap.eval;
@@ -24,7 +24,7 @@ layers_last_g_derivative = config.layers.last.g_derivative;
 
 % Choose random samples from the patterns
 [patterns_sample, patterns_indexes] = datasample(patterns, ...
-    dataSize, rows(patterns), 'Replace', false);
+    data_size, rows(patterns), 'Replace', false);
 expected_outputs_sample = expected_outputs(:, patterns_indexes);
 
 % Split patterns in train patterns and test patterns
