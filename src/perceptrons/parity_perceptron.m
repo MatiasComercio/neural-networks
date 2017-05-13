@@ -1,3 +1,6 @@
+global figure_error;
+figure_error = figure;
+
 % % Read input patterns
 % patterns = [
 %   1, 1,-1,-1;

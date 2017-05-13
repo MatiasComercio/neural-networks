@@ -2,7 +2,8 @@
 function ret = non_linear_exp_g_derivative_improved(g_output)
 % Calculates the derivative tanh function based on the output of the tanh_g
 % function
-  beta = 1/2; % TODO: read from input file
+  config = get_config('non_linear_exp_g');
+  beta = config.beta;
   ret = -2 * beta .* g_output .* (1 - g_output) + .1;
 end
 

@@ -1,5 +1,6 @@
 % Activation function
 function ret = non_linear_tanh_g (h)
-  beta = 1; % TODO: read from input file
+  config = get_config('non_linear_tanh_g');
+  beta = config.beta;
   ret = tanh(beta .* h);
 end

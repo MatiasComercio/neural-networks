@@ -1,3 +1,6 @@
+global figure_error;
+figure_error = figure;
+
 % patterns = [
 %   1, 1,-1,-1;
 %   1,-1, 1,-1;
