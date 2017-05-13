@@ -8,8 +8,6 @@ terrain_data;
 
 config = get_config('terrain_perceptron');
 
-sample_size = config.sample.size;
-
 epsilon = config.epsilon;
 gap_size = config.gap.size;
 gap_eval = config.gap.eval;
@@ -18,13 +16,13 @@ alpha = config.alpha;
 
 layers_neurons = config.layers.neurons;
 layers_hidden_g = config.layers.hidden.g;
-layers_hidden_g_derivate = config.layers.hidden.g_derivate;
+layers_hidden_g_derivative = config.layers.hidden.g_derivative;
 layers_last_g = config.layers.last.g;
-layers_last_g_derivate = config.layers.last.g_derivate;
+layers_last_g_derivative = config.layers.last.g_derivative;
 
 % Choose 10 random samples from the patterns
 [patterns_sample, patterns_indexes] = datasample(patterns, ...
-    sample_size, rows(patterns), 'Replace', false);
+    columns(patterns), rows(patterns), 'Replace', false);
 expected_outputs_sample = expected_outputs(:, patterns_indexes);
 
 % Split patterns in train patterns and test patterns
@@ -35,7 +33,7 @@ expected_outputs_sample = expected_outputs(:, patterns_indexes);
 
 % Create terrain network
 layers = create_layers(layers_neurons, layers_hidden_g, ...
-    layers_hidden_g_derivate, layers_last_g, layers_last_g_derivate);
+    layers_hidden_g_derivative, layers_last_g, layers_last_g_derivative);
 with_epsilon_are_close_enough = @(expected_output, neural_output) ...
     (epsilon_are_close_enough(expected_output, neural_output, epsilon));
 cost_function = @mean_square_error;

@@ -97,7 +97,7 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
     original_epoch.layers = net.layers;
     original_epoch.memory = nan;
   
-    % Train initial epoch
+    % Analyze initial epoch results
     train_outputs = solve_all(original_epoch.layers, train_patterns, ...
         train_outputs_size);
     original_epoch.train_global_error = net.cost_function(train_expected_outputs, ...
@@ -109,10 +109,7 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
     % Set last good train & test epochs to original epoch
     train_epoch = original_epoch;
     
-    % Next epoch
-    prev_epoch = original_epoch;
-    curr_epoch.i = prev_epoch.i + 1;
-    
+    [prev_epoch, curr_epoch] = next_epoch(original_epoch);
     % Train until expected outputs match the training outputs
 	finished = false;
     while ~finished
@@ -120,7 +117,7 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
         [curr_epoch.layers, curr_epoch.memory] = epoch(prev_epoch.layers, ...
             train_patterns, train_expected_outputs, prev_epoch.memory, eta, alpha);
     
-        % Train epoch
+        % Analyze epoch's training results
         train_outputs = solve_all(curr_epoch.layers, train_patterns, ...
             train_outputs_size);
         curr_epoch.train_global_error = net.cost_function(train_expected_outputs, ...
@@ -134,26 +131,27 @@ function [ net, curr_epoch, eta ] = train( net, train_patterns, ...
             
             % If this is not a good gap epoch go back to the last one
             if (~good_epoch)
-                prev_epoch = train_epoch;
-                curr_epoch.i = prev_epoch.i + 1;
+                [prev_epoch, curr_epoch] = next_epoch(train_epoch);
                 continue;
             end
             
             % Set train_epoch as this is the last good gap epoch
             train_epoch = curr_epoch;
+            
+            % Plot current epoch errors
+            plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error);
+            plot_error_bars(train_expected_outputs, train_outputs);
         end
         
-        % Plot current epoch errors
-        plot_train_test_error(curr_epoch.i, curr_epoch.train_global_error);
+        alpha = original_alpha;
         
-        % Next epoch
-        prev_epoch = curr_epoch;
-        curr_epoch.i = prev_epoch.i + 1;
-        
-        plot_error_bars(train_expected_outputs, train_outputs);
         % Determine whether the outputs match
         finished = have_to_finish(train_expected_outputs, train_outputs, ...
             net.are_close_enough);
+        
+        if ~finished
+            [prev_epoch, curr_epoch] = next_epoch(curr_epoch);
+        end
     end
     
     % Update net layers
@@ -186,6 +184,11 @@ end
 
 
 %% Below functions should act as `private` ones
+
+function [prev_epoch, curr_epoch] = next_epoch(epoch)
+    prev_epoch = epoch;
+    curr_epoch.i = prev_epoch.i + 1;
+end
 
 function [layers, memory] = fix(layers, expected_output, ...
     output, solve_memory, prev_fix_memory, eta, alpha)

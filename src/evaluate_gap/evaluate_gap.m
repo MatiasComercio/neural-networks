@@ -1,8 +1,8 @@
 function [eta, alpha, good_gap] = evaluate_gap(prev_gap_global_error, ...
     curr_gap_global_error, eta, ~, original_alpha)
-	% Constant definitions
-	a = 0.001;
-	b = 0.1;
+    config = get_config('evaluate_gap');
+    a = config.a;
+    b = config.b;
   
 	% Error has been degraded, so, it not a good gap
 	if (curr_gap_global_error >= prev_gap_global_error)
