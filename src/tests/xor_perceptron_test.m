@@ -1,3 +1,5 @@
+% Currently not working because of changes done in the train method 
+
 patterns = [
   -1;
   1;

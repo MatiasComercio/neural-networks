@@ -10,12 +10,15 @@ function out = get_config( input_string )
             out.a = 0.001;
             out.b = 0.1;
         case 'terrain_perceptron'
+            out.filename = 'terrain_perceptron_net.mat';
+            [out.patterns, out.expected_outputs] = terrain_data();
+            out.data_size = columns(out.patterns);
             out.epsilon = 0.1;
             out.gap.size = 1;
             out.gap.eval = @evaluate_gap;
             out.eta = 0.1;
             out.alpha = 0.9;
-            out.layers.neurons = [2, 10, 10, 5, 1];
+            out.layers.neurons = [rows(out.patterns), 5, rows(out.expected_outputs)];
             % Possible: non_linear_tanh_g
             %           non_linear_exp_g
             %           linear_identity_g

@@ -13,6 +13,12 @@ terrain_perceptron_net.mat
 # OSX / *nix default autosave extension
 *.m~
 
+# Image
+*.png
+
+# Matlab generated files
+*.mat
+
 # Compiled MEX binaries (all platforms)
 *.mex*
 
