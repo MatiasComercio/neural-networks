@@ -1,6 +1,5 @@
 function plot_original_and_solved( original_patterns, ...
-    original_outpoouts, solved_patterns, solved_outputs )
-
+    original_outpoouts, solved_patterns, solved_outputs )    
     figure;
     plot3(original_patterns(1,:), original_patterns(2,:), ...
         original_outpoouts, 'ro');

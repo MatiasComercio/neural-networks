@@ -90,6 +90,18 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     eta, original_alpha, gap, evaluate_gap )
 
     global figure_error;
+    global figure_error_2;
+    
+    % Load config
+    config = get_config('neural_network');
+    net_save_period = config.net_save_period;
+    error_bars_plot_period = config.error_bars_plot_period;
+    
+    % Choose a random set of patterns to better visualize how the network
+    % is working
+    original_patterns = horzcat(train_patterns, test_patterns);
+    original_expected_outputs = horzcat(train_expected_outputs, ...
+        test_expected_outputs);
 
     train_outputs_size = rows(train_expected_outputs);
     test_outputs_size = rows(test_expected_outputs);
@@ -117,13 +129,14 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     
     % Plot initial epoch errors
     plot_train_test_error(original_epoch.i, original_normalized_train_error, ...
-        original_normalized_test_error);    
+        original_normalized_test_error);
     
     % Set last good train & test epochs to original epoch
     train_epoch = original_epoch;
     test_epoch = original_epoch;
     
     [prev_epoch, curr_epoch] = next_epoch(original_epoch);
+    
     % Train until expected outputs match the training outputs
 	finished = false;
     while ~finished
@@ -145,9 +158,13 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
         
         gap_passed = (mod(curr_epoch.i, gap) == 0);
         if (gap_passed)
+            
+            % Difference with previous epoch training error
+            curr_error_variation = curr_epoch.train_global_error - prev_epoch.train_global_error;
+            error_variation(curr_epoch.i) = curr_error_variation;
+            
             % Adapt eta and alpha according to global error change through this gap
-            [eta, alpha, good_epoch] = evaluate_gap(train_epoch.train_global_error, ...
-                curr_epoch.train_global_error, eta, alpha, original_alpha);
+            [eta, alpha, good_epoch] = evaluate_gap(curr_error_variation, eta, alpha, original_alpha, error_variation);
             
             % If this is not a good gap epoch go back to the last one
             if (~good_epoch)
@@ -167,23 +184,32 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
         
         % Plot current epoch errors
         plot_train_test_error(curr_epoch.i, curr_normalized_train_error, curr_normalized_test_error);
-        plot_error_bars(train_expected_outputs, train_outputs);
+        if(mod(curr_epoch.i, error_bars_plot_period) == 0)
+            plot_error_bars(train_expected_outputs, train_outputs);
+        end
         
         % Save epoch if test error intersects train error
         if (sign(prev_normalized_train_error  - prev_normalized_test_error) ~= ...
                 sign(curr_normalized_train_error - curr_normalized_test_error ) ...
                     || curr_normalized_train_error == curr_normalized_test_error ) 
             test_epoch = curr_epoch;
-            
-            % Save current figure in file
-            print(figure_error, 'terrain_perceptron_net_test', '-dpng')
-            
-            % Save current net in file
+        end
+        
+        % Every save_period epoch, save current net
+        if(mod(curr_epoch.i, net_save_period) == 0)
+            % Backup current layers
             aux_layers = net.layers;
             net.layers = test_epoch.layers;
-            save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
+            
+            % Save current net in file
+            save('terrain_perceptron_net.mat', 'net', 'eta', 'train_patterns', ...
                 'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
-            net.layers = aux_layers;        
+            print(figure_error, 'terrain_perceptron_errors', '-dpng');
+            print(figure_error_2, 'terrain_perceptron_3D', '-dpng');
+            plot_original_patterns(net, original_patterns, original_expected_outputs);
+            
+            % Restore current layers
+            net.layers = aux_layers;
         end
         
         alpha = original_alpha;
@@ -199,6 +225,10 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     
     % Update net layers
     net.layers = curr_epoch.layers;
+    
+    % Plot last epoch
+    plot_error_bars(train_expected_outputs, train_outputs);
+    plot_original_patterns(net, original_patterns, original_expected_outputs);
 end
 
 function [output, memory] = solve(layers, pattern)
