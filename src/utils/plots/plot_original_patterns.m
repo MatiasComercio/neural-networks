@@ -11,6 +11,7 @@ function plot_original_patterns(net, original_patterns, original_expected_output
     hold on;
     plot3(original_patterns(1,:), original_patterns(2,:), outputs, ...
         'b*');
+    hold off;
     
     % Plot Estimated Surface
     subplot(1,2,2);
