@@ -89,17 +89,16 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     train_expected_outputs, test_patterns, test_expected_outputs, ...
     eta, original_alpha, gap, evaluate_gap )
 
-    %global figure_error;
-    %global figure_error_2;
+    global figure_error;
+    global figure_error_2;
     
-    % Load configurable variables
+    % Load config
     config = get_config('neural_network');
     net_save_period = config.net_save_period;
     error_bars_plot_period = config.error_bars_plot_period;
     
     % Choose a random set of patterns to better visualize how the network
     % is working
-    random_patterns = create_rand_matrix(-3, 3, 2, 10000);
     original_patterns = horzcat(train_patterns, test_patterns);
     original_expected_outputs = horzcat(train_expected_outputs, ...
         test_expected_outputs);
@@ -130,7 +129,7 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     
     % Plot initial epoch errors
     plot_train_test_error(original_epoch.i, original_normalized_train_error, ...
-        original_normalized_test_error);    
+        original_normalized_test_error);
     
     % Set last good train & test epochs to original epoch
     train_epoch = original_epoch;
@@ -194,26 +193,22 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
                 sign(curr_normalized_train_error - curr_normalized_test_error ) ...
                     || curr_normalized_train_error == curr_normalized_test_error ) 
             test_epoch = curr_epoch;
-            
-            % Save current figure in file
-            %print(figure_error, 'terrain_perceptron_net_test', '-dpng')
-            
-            % Save current net in file
-            %aux_layers = net.layers;
-            %net.layers = test_epoch.layers;
-            %save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
-            %    'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
-            %net.layers = aux_layers;        
         end
         
-        % Every 200 epoch, save current epoch
+        % Every save_period epoch, save current net
         if(mod(curr_epoch.i, net_save_period) == 0)
+            % Backup current layers
             aux_layers = net.layers;
             net.layers = test_epoch.layers;
+            
             % Save current net in file
-            save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
+            save('terrain_perceptron_net.mat', 'net', 'train_patterns', ...
                 'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
-            plot_surface_comparison(net, random_patterns, original_patterns, original_expected_outputs);
+            print(figure_error, 'terrain_perceptron_errors', '-dpng');
+            print(figure_error_2, 'terrain_perceptron_3D', '-dpng');
+            plot_original_patterns(net, original_patterns, original_expected_outputs);
+            
+            % Restore current layers
             net.layers = aux_layers;
         end
         
@@ -230,8 +225,10 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     
     % Update net layers
     net.layers = curr_epoch.layers;
+    
+    % Plot last epoch
     plot_error_bars(train_expected_outputs, train_outputs);
-    plot_surface_comparison(net, random_patterns, original_patterns, original_expected_outputs);
+    plot_original_patterns(net, original_patterns, original_expected_outputs);
 end
 
 function [output, memory] = solve(layers, pattern)

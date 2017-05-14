@@ -1,5 +1,3 @@
-
-
 global figure_error;
 figure_error = figure;
 global figure_error_2;
@@ -49,5 +47,7 @@ tic;
     alpha, gap_size, gap_eval);
 toc;
 
-save(filename, 'net', 'train_patterns', 'train_expected_outputs', ...
+save(filename, 'net', 'last_epoch', 'test_epoch', 'eta', 'train_patterns', 'train_expected_outputs', ...
     'test_patterns', 'test_expected_outputs');
+print(figure_error, 'terrain_perceptron_errors', '-dpng');
+print(figure_error_2, 'terrain_perceptron_3D', '-dpng');
