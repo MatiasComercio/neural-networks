@@ -16,10 +16,10 @@ function out = get_config( input_string )
             out.data_size = columns(out.patterns);
             out.epsilon = 0.1;
             out.gap.size = 1;
-            out.gap.eval = @evaluate_gap;
+            out.gap.eval = @dont_evaluate_gap;
             out.eta = 0.05;
             out.alpha = 0.9;
-            out.layers.neurons = [rows(out.patterns), 10, 5, 5, 3, rows(out.expected_outputs)];
+            out.layers.neurons = [rows(out.patterns), 10, 5, 5, rows(out.expected_outputs)];
             % Possible: non_linear_tanh_g
             %           non_linear_exp_g
             %           linear_identity_g
@@ -40,6 +40,9 @@ function out = get_config( input_string )
             %           non_linear_exp_g_derivative_improved
             %           linear_identity_g_derivative
             out.layers.last.g_derivative = @linear_identity_g_derivative;
+        case 'neural_network'
+            out.net_save_period = 50;
+            out.error_bars_plot_period = 15;
         otherwise
             error('%s config not found', upper(input_string));
     end

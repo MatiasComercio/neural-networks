@@ -89,7 +89,20 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     train_expected_outputs, test_patterns, test_expected_outputs, ...
     eta, original_alpha, gap, evaluate_gap )
 
-    global figure_error;
+    %global figure_error;
+    %global figure_error_2;
+    
+    % Load configurable variables
+    config = get_config('neural_network');
+    net_save_period = config.net_save_period;
+    error_bars_plot_period = config.error_bars_plot_period;
+    
+    % Choose a random set of patterns to better visualize how the network
+    % is working
+    random_patterns = create_rand_matrix(-3, 3, 2, 10000);
+    original_patterns = horzcat(train_patterns, test_patterns);
+    original_expected_outputs = horzcat(train_expected_outputs, ...
+        test_expected_outputs);
 
     train_outputs_size = rows(train_expected_outputs);
     test_outputs_size = rows(test_expected_outputs);
@@ -172,7 +185,9 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
         
         % Plot current epoch errors
         plot_train_test_error(curr_epoch.i, curr_normalized_train_error, curr_normalized_test_error);
-        plot_error_bars(train_expected_outputs, train_outputs);
+        if(mod(curr_epoch.i, error_bars_plot_period) == 0)
+            plot_error_bars(train_expected_outputs, train_outputs);
+        end
         
         % Save epoch if test error intersects train error
         if (sign(prev_normalized_train_error  - prev_normalized_test_error) ~= ...
@@ -191,6 +206,17 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
             %net.layers = aux_layers;        
         end
         
+        % Every 200 epoch, save current epoch
+        if(mod(curr_epoch.i, net_save_period) == 0)
+            aux_layers = net.layers;
+            net.layers = test_epoch.layers;
+            % Save current net in file
+            save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
+                'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
+            plot_surface_comparison(net, random_patterns, original_patterns, original_expected_outputs);
+            net.layers = aux_layers;
+        end
+        
         alpha = original_alpha;
         
         % Determine whether the outputs match
@@ -204,6 +230,8 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     
     % Update net layers
     net.layers = curr_epoch.layers;
+    plot_error_bars(train_expected_outputs, train_outputs);
+    plot_surface_comparison(net, random_patterns, original_patterns, original_expected_outputs);
 end
 
 function [output, memory] = solve(layers, pattern)

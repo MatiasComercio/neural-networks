@@ -2,6 +2,8 @@
 
 global figure_error;
 figure_error = figure;
+global figure_error_2;
+figure_error_2 = figure;
 
 config = get_config('terrain_perceptron');
 

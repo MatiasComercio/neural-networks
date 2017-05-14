@@ -8,7 +8,7 @@ function [eta, alpha, good_gap] = evaluate_gap(curr_error_variation, eta, ~, ori
         if (curr_error_variation > 0)
             good_gap = false;
             eta = eta - b * eta;
-            alpha = 0;      
+            alpha = 0;
             return;
         end
         
@@ -30,7 +30,7 @@ function [ error_consistently_decreased ] = error_consistently_decreased(error_v
         error_consistently_decreased = false;
         return;
     end
-    last_k_errors = error_variation(length(error_variation)-k+1:end);
+    last_k_errors = error_variation(end-k+1:end);
     error_consistently_decreased = true;
     for i=1:k-1
         if (last_k_errors(i+1)>last_k_errors(i))
