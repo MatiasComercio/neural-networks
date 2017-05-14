@@ -30,10 +30,10 @@ function [ error_consistently_decreased ] = error_consistently_decreased(error_v
         error_consistently_decreased = false;
         return;
     end
-    last_k_errors = error_variation(length(error_variation)-k+1:length(error_variation));
+    last_k_errors = error_variation(length(error_variation)-k+1:end);
     error_consistently_decreased = true;
     for i=1:k-1
-        if (last_k_errors(i+1)>last_k_errors(i+1))
+        if (last_k_errors(i+1)>last_k_errors(i))
             error_consistently_decreased = false;
             return;
         end
