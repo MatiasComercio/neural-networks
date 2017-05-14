@@ -124,6 +124,7 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
     test_epoch = original_epoch;
     
     [prev_epoch, curr_epoch] = next_epoch(original_epoch);
+    
     % Train until expected outputs match the training outputs
 	finished = false;
     while ~finished
@@ -145,9 +146,13 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
         
         gap_passed = (mod(curr_epoch.i, gap) == 0);
         if (gap_passed)
+            
+            % Difference with previous epoch training error
+            curr_error_variation = curr_epoch.train_global_error - prev_epoch.train_global_error;
+            error_variation(curr_epoch.i) = curr_error_variation;
+            
             % Adapt eta and alpha according to global error change through this gap
-            [eta, alpha, good_epoch] = evaluate_gap(train_epoch.train_global_error, ...
-                curr_epoch.train_global_error, eta, alpha, original_alpha);
+            [eta, alpha, good_epoch] = evaluate_gap(curr_error_variation, eta, alpha, original_alpha, error_variation);
             
             % If this is not a good gap epoch go back to the last one
             if (~good_epoch)
@@ -176,14 +181,14 @@ function [ net, curr_epoch, test_epoch, eta ] = train( net, train_patterns, ...
             test_epoch = curr_epoch;
             
             % Save current figure in file
-            print(figure_error, 'terrain_perceptron_net_test', '-dpng')
+            %print(figure_error, 'terrain_perceptron_net_test', '-dpng')
             
             % Save current net in file
-            aux_layers = net.layers;
-            net.layers = test_epoch.layers;
-            save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
-                'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
-            net.layers = aux_layers;        
+            %aux_layers = net.layers;
+            %net.layers = test_epoch.layers;
+            %save('terrain_perceptron_net_test.mat', 'net', 'train_patterns', ...
+            %    'train_expected_outputs', 'test_patterns', 'test_expected_outputs');
+            %net.layers = aux_layers;        
         end
         
         alpha = original_alpha;

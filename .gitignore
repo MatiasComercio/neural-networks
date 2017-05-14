@@ -16,6 +16,9 @@ terrain_perceptron_net.mat
 # Image
 *.png
 
+# Matlab generated figures
+*.fig
+
 # Matlab generated files
 *.mat
 
