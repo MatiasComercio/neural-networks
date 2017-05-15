@@ -19,43 +19,53 @@ Change the `src/get_config.m` file with desired parameters.
 
 ### Change non linear activation function's **beta**
 
-    case 'non_linear_exp_g'
-        out.beta = 1/2;
-    case 'non_linear_tanh_g'
-        out.beta = 1;'
-        
+```
+case 'non_linear_exp_g'
+    out.beta = 1/2;
+case 'non_linear_tanh_g'
+    out.beta = 1;'
+```
+
 ### Change adaptive learning rate parameters
 
 Where `a` and `b` are the adaptive constants and `k` refers to the number of continuous good epochs the have to occur in order to increment the learning rate.
 
-    case 'evaluate_gap'
-        out.a = 0.001;
-        out.b = 0.1;
-        out.k = 3;
+```
+case 'evaluate_gap'
+    out.a = 0.001;
+    out.b = 0.1;
+    out.k = 3;
+```
 
 ### Change when to plot while training
 
-    case 'neural_network'
-        out.net_save_period = 50;
-        out.error_bars_plot_period = 15;
-        
+```
+case 'neural_network'
+    out.net_save_period = 50;
+    out.error_bars_plot_period = 15;
+```
+
 ### Terrain perceptron
 
 #### Change the filename where the trained network will be saved
 
-    case 'terrain_perceptron'
-        out.filename = 'terrain_perceptron_net.mat';
-        ...
+```
+case 'terrain_perceptron'
+    out.filename = 'terrain_perceptron_net.mat';
+    ...
+```
 
 #### Change the perceptron's data
 
 Where `data_size` is the sample size to take from `patterns` and `expected_outputs`. `terrain_data()` function returns the provided data for the perceptron.
 
-    case 'terrain_perceptron'
-        ...
-        [out.patterns, out.expected_outputs] = terrain_data();
-        out.data_size = columns(out.patterns);
-        ...
+```
+case 'terrain_perceptron'
+    ...
+    [out.patterns, out.expected_outputs] = terrain_data();
+    out.data_size = columns(out.patterns);
+    ...
+```
 
 #### Change the perceptron's parameters
 
@@ -67,15 +77,16 @@ Where `data_size` is the sample size to take from `patterns` and `expected_outpu
     - Use adaptive learning rate: `@dont_evaluate_gap`
     - Disable adaptive learning rate: `@evaluate_gap`
 
-
-     case 'terrain_perceptron'
-        ...
-        out.epsilon = 0.1;
-        out.eta = 0.05;
-        out.alpha = 0.9;
-        out.gap.size = 1;
-        out.gap.eval = @dont_evaluate_gap;
-        ...
+```
+ case 'terrain_perceptron'
+    ...
+    out.epsilon = 0.1;
+    out.eta = 0.05;
+    out.alpha = 0.9;
+    out.gap.size = 1;
+    out.gap.eval = @dont_evaluate_gap;
+    ...
+```
 
 #### Change the perceptron's architecture
 
@@ -93,14 +104,15 @@ Where `data_size` is the sample size to take from `patterns` and `expected_outpu
     - `non_linear_exp_g_derivative_improved`
     - `linear_identity_g_derivative`
 
-
-    case 'terrain_perceptron'
-        ...
-        out.layers.neurons = [rows(out.patterns), 10, 5, 5, rows(out.expected_outputs)];
-        out.layers.hidden.g = @non_linear_tanh_g;
-        out.layers.hidden.g_derivative = @non_linear_tanh_g_derivative_improved;
-        out.layers.last.g = @linear_identity_g;
-        out.layers.last.g_derivative = @linear_identity_g_derivative;
+```
+case 'terrain_perceptron'
+    ...
+    out.layers.neurons = [rows(out.patterns), 10, 5, 5, rows(out.expected_outputs)];
+    out.layers.hidden.g = @non_linear_tanh_g;
+    out.layers.hidden.g_derivative = @non_linear_tanh_g_derivative_improved;
+    out.layers.last.g = @linear_identity_g;
+    out.layers.last.g_derivative = @linear_identity_g_derivative;
+```
 
 ## Usage
 
