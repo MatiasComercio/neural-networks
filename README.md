@@ -1,6 +1,9 @@
 # Neural Networks
 TP2 for Artificial Intelligence Systems course from I.T.B.A.
 
+## Documentation
+Project related documents can be found at the `docs` folder
+
 ## Perceptrons
 
 The project has included 6 perceptrons:
