@@ -9,7 +9,7 @@ The project has included 6 perceptrons:
   - TERRAIN PERCEPTRON
 - Currently not working (_used in development stage only_):
   - AND, OR, PARITY, SYMMETRY, XOR PERCEPTRONS
-  
+
 ## Pre-requisites
 Add the `src` folder & subfolders to the Matlab/Octave path.
 
@@ -28,7 +28,7 @@ case 'non_linear_tanh_g'
 
 ### Change adaptive learning rate parameters
 
-Where `a` and `b` are the adaptive constants and `k` refers to the number of continuous good epochs the have to occur in order to increment the learning rate.
+Where `a` and `b` are the adaptive constants and `k` refers to the number of continuous good epochs that have to occur in order to increment the learning rate.
 
 ```
 case 'evaluate_gap'
@@ -69,10 +69,11 @@ case 'terrain_perceptron'
 
 #### Change the perceptron's parameters
 
-- `epsilon` is the error difference that has to be reached in order to stop learning when comparing the network's outputs with the desired ones.
+- `epsilon` is the error difference that has to be reached in order to stop training when comparing the network's outputs with the desired ones for the training patterns.
 - `alpha` is the momentum parameter.
     - Disable momentum: set `alpha = 0`
 - `gap.size` is the number of epochs that need to have passed in order to test if a good epoch was reached.
+  - **IMPORTANT**: Currently unavailable option: You should always use `gap.size = 1`
 - `gap.eval` it's the adaptive learning rate function. Possible values:
     - Use adaptive learning rate: `@dont_evaluate_gap`
     - Disable adaptive learning rate: `@evaluate_gap`
@@ -92,7 +93,7 @@ case 'terrain_perceptron'
 
 - `layers.layers.neurons` is an array where each element represents a layer and sets the number of neurons for that layer.
 - `layers.hidden.g` is the activation function for all the hidden layers and `layers.hidden.g_derivative ` its derivative.
-- `layers.last.g` is the activation function for the last layer and `layers.last.g_derivative` its derivative. 
+- `layers.last.g` is the activation function for the last layer and `layers.last.g_derivative` its derivative.
 - `layers.*.g` possible values:
     - `non_linear_tanh_g`
     - `non_linear_exp_g`
@@ -120,9 +121,18 @@ Run the desired perceptron's script from `src/perceptrons`.
 
 ### Terrain Perceptron
 
-Run `src/perceptrons/tarrain_perceptron/terrain_perceptron.md` script after changing the perceptron's configuration with desired parameters.
+Run `src/perceptrons/tarrain_perceptron/terrain_perceptron.m` script after changing the perceptron's configuration with desired parameters.
 
-The script will save a file with the name specified in the configuration with the trained network data. You can use this trained network to solve other data without learning by running the `src/perceptrons/tarrain_perceptron/trained_terrain_perceptron.md` script after changing it's content with desired parameters.
+The script will save a file with the name specified in the configuration with the trained network data. You can use this trained network to solve other data without learning by running the `src/perceptrons/tarrain_perceptron/trained_terrain_perceptron.m` script after changing it's content with desired parameters.
+
+#### Example
+From the Matlab/Octave command line, and after adding the `src` folder & subfolders to the Matlab/Octave path, execute
+
+    terrain_perceptron
+
+Then, you can do
+
+    trained_terrain_perceptron
 
 ## Authors
 This project is written and maintained by
