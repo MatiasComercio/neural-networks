@@ -1,9 +1,6 @@
 # Neural Networks
 TP2 for Artificial Intelligence Systems course from I.T.B.A.
 
-## Pre-requisites
-Add the `src` folder & subfolders to the Matlab/Octave path.
-
 ## Perceptrons
 
 The project has included 6 perceptrons:
@@ -12,6 +9,9 @@ The project has included 6 perceptrons:
   - TERRAIN PERCEPTRON
 - Currently not working (_used in development stage only_):
   - AND, OR, PARITY, SYMMETRY, XOR PERCEPTRONS
+  
+## Pre-requisites
+Add the `src` folder & subfolders to the Matlab/Octave path.
 
 ## Configuration
 
